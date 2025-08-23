@@ -13,8 +13,8 @@ import javafx.scene.text.Font;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-public class LibraryView {
-    // VIEW : UI components
+public class AppView {
+    // VIEW: UI components
     private TableView<Book> borrowedBookView;
     private TableView<Book> downloadedBookView;
     private TableView<Book> tableView;
@@ -23,12 +23,12 @@ public class LibraryView {
     private Stage primaryStage;
     private Scene scene;
     private Button userNeedHelp;
-    // VIEW : Holds references to Controller and Model for MVC pattern.
-    private LibraryController controller;
-    private UserModel model;
+    // VIEW: Holds references to Controller and Model for the MVC pattern.
+    private AppController controller;
+    private AppModel model;
 
-    // VIEW : Constructor
-    public LibraryView(LibraryController controller, UserModel model, Stage primaryStage) {
+    // VIEW: Constructor
+    public AppView(AppController controller, AppModel model, Stage primaryStage) {
         this.controller = controller;
         this.model = model;
         this.primaryStage = primaryStage;
@@ -47,7 +47,7 @@ public class LibraryView {
         return scene;
     }
 
-    // VIEW : UI layout and setup
+    // VIEW: UI layout and setup
     public void createAndConfigurePane() {
         view = new VBox(10);
         view.setAlignment(Pos.CENTER);
@@ -55,7 +55,7 @@ public class LibraryView {
         scene = new Scene(view, 500, 500);
     };
 
-    // VIEW : Main menu creating and event handling
+    // VIEW: Main menu and event handling
     public void createAndLayoutControls() {
         Label headingLabel = new Label("Library App");
         headingLabel.setFont(new Font("Arial", 32));
@@ -75,12 +75,12 @@ public class LibraryView {
         option3.setOnAction(e -> primaryStage.setScene(createSceneOpt3()));
 
         view.getChildren().addAll(headingLabel, titleLabel, optionBox);
-
     }
 
-    // This is the "View all books" button with the main purpose of showing all
-    // books including information
-    // and status so the user can logically check out the book he/she wants.
+    // Scence for the "View all books" button
+    // Displays all books including book information and status.
+    // Buttons for the user to checkout a book, filter books,
+    // or go back to menu.
     public Scene createSceneOpt1() {
         Label heading = new Label("List of books: ");
         heading.setFont(new Font("Arial", 20));
@@ -100,11 +100,6 @@ public class LibraryView {
         col5.setCellValueFactory(cell -> cell.getValue().statusProperty());
 
         tableView.getColumns().addAll(col1, col2, col3, col4, col5);
-
-        // VIEW: Calls Controller Method
-        // CONTROLLER: Calls model method
-        // MODEL:  returns its observableList of books
-        // VIEW: binds table to this list - automatic updates when Model changes
         tableView.setItems(controller.getLibrary().libraryProperty());
 
         Button backButton = new Button("Back to Menu");
@@ -113,7 +108,6 @@ public class LibraryView {
         });
 
         Button checkOutButton = new Button("Checkout");
-        // MVC FLOW: user interaction -> View -> Controller -> Model
         checkOutButton.setOnAction(e -> {
             Book selectedBook = tableView.getSelectionModel().getSelectedItem();
             if (selectedBook != null) {
@@ -124,7 +118,7 @@ public class LibraryView {
         filterButton.setOnAction(e -> filterForm());
 
         Label countBookField = new Label();
-        // Data binding: Label automatically updates when model changes
+        // Data binding: Label updates automatically when model changes
         countBookField.textProperty().bind(model.countBorrowedBookProperty().asString("Borrowed Books: %d"));
         HBox buttonRow = new HBox(10, backButton, checkOutButton, filterButton);
         checkOutButton.setAlignment(Pos.BOTTOM_RIGHT);
@@ -133,10 +127,13 @@ public class LibraryView {
         viewOpt1.setAlignment(Pos.CENTER);
         Scene scene1 = new Scene(viewOpt1, 800, 500);
 
-        // This listeners _ when the user's book count is updated.
-        // It checks whether the new value reaches a certain threshold
+        // This listeners fires when the user's book count is updated.
+        // It read whether the new value reaches a certain threshold
         // and calls the controller to update the overMaximumProperty.
-        // PROPERTY LISTENER: View observes - Model changes
+        // VIEW: Observes changes to the user's borrowed book count and reacts to
+        // updates.
+        // CONTROLLER: Updates the overMaximumProperty if the threshold is reached.
+        // MODEL: Stores and maanges the user's borrowed book count.
         model.countBorrowedBookProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal.intValue() >= 3) {
                 controller.setOverMaximum(true);
@@ -147,9 +144,12 @@ public class LibraryView {
         return scene1;
     }
 
-    // This method is responsible for filtering between print books and digital
-    // books.
-    // VIEW: filter form for book types
+    // Opens a modal form that allows the user to filter the library
+    // between print and digital books.
+    // VIEW: Displays the filter options.
+    // CONTROLLER: Handles user input and delegates it to the model.
+    // MODEL: Provides the filtered data
+    // VIEW: Updates the table view with the filtered dataset.
     public void filterForm() {
         Stage filter = new Stage();
         filter.initOwner(primaryStage);
@@ -169,14 +169,14 @@ public class LibraryView {
             // MVC FLOW: User interaction -> View -> Controller -> Model
             if (filter1.isSelected()) {
                 // VIEW -> CONTROLLER
-                LibraryModel printLibrary = this.controller.filterPrintBook();
+                Library printLibrary = this.controller.filterPrintBook();
                 // VIEW: updates with filtered data
                 tableView.setItems(printLibrary.libraryProperty());
                 filter.close();
 
             } else if (filter2.isSelected()) {
                 // VIEW -> CONTROLLER
-                LibraryModel digitalLibrary = this.controller.filterDigitalBook();
+                Library digitalLibrary = this.controller.filterDigitalBook();
                 // VIEW: updates with filtered data
                 tableView.setItems(digitalLibrary.libraryProperty());
                 filter.close();
@@ -192,10 +192,14 @@ public class LibraryView {
         filter.show();
     }
 
-    // This method opens a checkout form allowing the user to borrow or download a book.    
-    // VIEW: Displays a checkout form showing book details and buttons to checkout the book.
-    // CONTROLLER: Handles the user's checkout action and updates the model accordingly.
-    // MODEL: Updates the book's availability and the user's borrowed/downloaded list.
+    // This method opens a checkout form allowing the user to borrow or download a
+    // book.
+    // VIEW: Displays a checkout form showing book details and buttons to checkout
+    // the book.
+    // CONTROLLER: Handles the user's checkout action and updates the model
+    // accordingly.
+    // MODEL: Updates the book's availability and the user's borrowed/downloaded
+    // list.
     public void checkOutForm(Book selectedBook) {
         Stage checkOut = new Stage();
         checkOut.initOwner(primaryStage);
@@ -230,9 +234,8 @@ public class LibraryView {
         Scene checkoutScene = new Scene(root, 300, 300);
         checkOut.setScene(checkoutScene);
 
-
-        // This code displays the appropriate labels for physical books (PrintBook) in the
-        // library system.
+        // This code displays the appropriate labels for physical books (PrintBook) in
+        // the library system.
         // VIEW: Displays the borrowing options and alerts the user if they have reached
         // the borrow limit.
         // CONTROLLER: Handles the borrow action triggers the pop-up confirmation.
@@ -258,7 +261,7 @@ public class LibraryView {
                     // MVC FLOW: Borrow process
                     // VIEW: Displays the checkout form.
                     checkoutBtnForForm.setOnAction(e -> {
-                        // CONTROLLER: Proccesses the borrow request and updates the borrowed 
+                        // CONTROLLER: Proccesses the borrow request and updates the borrowed
                         // book count.
                         controller.checkoutBook(selectedBook);
                         controller.addCountBorrowedBook();
@@ -273,16 +276,32 @@ public class LibraryView {
             }
         } else {
             if (selectedBook instanceof PrintBook) {
-                this.createPopUpForm(primaryStage, "This book is unavailable.");
+                checkoutBtnForForm.setText("Borrow");
+                checkoutBtnForForm.setOnAction(e -> {
+                    this.createPopUpForm(primaryStage, "This book is not available");
+                    checkOut.close();
+                });
+                checkOut.show();
             } else {
-                this.createPopUpForm(primaryStage, "This book cannot be downloaded.");
+                checkoutBtnForForm.setText("Download");
+                checkoutBtnForForm.setOnAction(e -> {
+                    this.createPopUpForm(primaryStage, "This book can not be downloaded");
+                    checkOut.close();
+                });
+                checkOut.show();
             }
         }
     }
 
-    // This method is use for helping user to find book based on their demands
-    // genre. Ex: Romance, Fiction , etc..
-    // VIEW: find book form -> View -> Controller -> Model
+    // Opens a form that lets the user search for book by format (print/digital)
+    // and genre. Displays the filtered results in a TableView and provides options
+    // to checkout a selected book or go back to the menu.
+    // VIEW: Presents selection options and displays results in a TableView.
+    // CONTROLLER: Applies filters based on the user's choices and processes
+    // checkout requests.
+    // MODEL: Provides filtered book data and updates the books availability and the
+    // user's
+    // borrowed/downloaded book list.
     public void findBookForm() {
         Stage findBook = new Stage();
         findBook.initOwner(primaryStage);
@@ -331,58 +350,58 @@ public class LibraryView {
         fantasy.setToggleGroup(toggleGroup2);
 
         Button submitBtn = new Button("Submit");
-        // This button is designed to handle the selection from user for finding the
-        // book for both digital book
-        // and printbook as well. Moreover, it filters the genre based on the selected
-        // button from user to
-        // increase the satisfactory experience.
+        // Handles the user's search request after clicking "Submit."
+        // VIEW: Reads the user's selected format
+        // CONTROLLER: Calls the appropriate filter method based on the user's choices.
+        // MODEL: Returns a filtered LibraryModel.
+        // VIEW: Displays the filtered LibraryModel in a table view.
         submitBtn.setOnAction(e -> {
-            // VIEW: interaction user -> CONTROLLER -> VIEW
             if (fiction.isSelected() && printBook.isSelected()) {
-                LibraryModel printLibrary = controller.filterPrintBook(Genre.FICTION);
+                Library printLibrary = controller.filterPrintBook(Genre.FICTION);
                 helpUserView.setItems(printLibrary.libraryProperty());
             } else if (nonfiction.isSelected() && printBook.isSelected()) {
-                LibraryModel printLibrary = controller.filterPrintBook(Genre.NON_FICTION);
+                Library printLibrary = controller.filterPrintBook(Genre.NON_FICTION);
                 helpUserView.setItems(printLibrary.libraryProperty());
             } else if (fantasy.isSelected() && printBook.isSelected()) {
-                LibraryModel printLibrary = controller.filterPrintBook(Genre.FANTASY);
+                Library printLibrary = controller.filterPrintBook(Genre.FANTASY);
                 helpUserView.setItems(printLibrary.libraryProperty());
             } else if (mystery.isSelected() && printBook.isSelected()) {
-                LibraryModel printLibrary = controller.filterPrintBook(Genre.MYSTERY);
+                Library printLibrary = controller.filterPrintBook(Genre.MYSTERY);
                 helpUserView.setItems(printLibrary.libraryProperty());
             } else if (scienceFiction.isSelected() && printBook.isSelected()) {
-                LibraryModel printLibrary = controller.filterPrintBook(Genre.SCIENCE_FICTION);
+                Library printLibrary = controller.filterPrintBook(Genre.SCIENCE_FICTION);
                 helpUserView.setItems(printLibrary.libraryProperty());
             } else if (romance.isSelected() && printBook.isSelected()) {
-                LibraryModel printLibrary = controller.filterPrintBook(Genre.ROMANCE);
+                Library printLibrary = controller.filterPrintBook(Genre.ROMANCE);
                 helpUserView.setItems(printLibrary.libraryProperty());
             } else if (poetry.isSelected() && printBook.isSelected()) {
-                LibraryModel printLibrary = controller.filterPrintBook(Genre.POETRY);
+                Library printLibrary = controller.filterPrintBook(Genre.POETRY);
                 helpUserView.setItems(printLibrary.libraryProperty());
             } else if (fiction.isSelected() && digitalBook.isSelected()) {
-                LibraryModel digitalLibrary = controller.filterDigitalBook(Genre.FICTION);
+                Library digitalLibrary = controller.filterDigitalBook(Genre.FICTION);
                 helpUserView.setItems(digitalLibrary.libraryProperty());
             } else if (nonfiction.isSelected() && digitalBook.isSelected()) {
-                LibraryModel digitalLibrary = controller.filterDigitalBook(Genre.NON_FICTION);
+                Library digitalLibrary = controller.filterDigitalBook(Genre.NON_FICTION);
                 helpUserView.setItems(digitalLibrary.libraryProperty());
             } else if (fantasy.isSelected() && digitalBook.isSelected()) {
-                LibraryModel digitalLibrary = controller.filterDigitalBook(Genre.FANTASY);
+                Library digitalLibrary = controller.filterDigitalBook(Genre.FANTASY);
                 helpUserView.setItems(digitalLibrary.libraryProperty());
             } else if (mystery.isSelected() && digitalBook.isSelected()) {
-                LibraryModel digitalLibrary = controller.filterDigitalBook(Genre.MYSTERY);
+                Library digitalLibrary = controller.filterDigitalBook(Genre.MYSTERY);
                 helpUserView.setItems(digitalLibrary.libraryProperty());
             } else if (scienceFiction.isSelected() && digitalBook.isSelected()) {
-                LibraryModel digitalLibrary = controller.filterDigitalBook(Genre.SCIENCE_FICTION);
+                Library digitalLibrary = controller.filterDigitalBook(Genre.SCIENCE_FICTION);
                 helpUserView.setItems(digitalLibrary.libraryProperty());
             } else if (romance.isSelected() && digitalBook.isSelected()) {
-                LibraryModel digitalLibrary = controller.filterDigitalBook(Genre.ROMANCE);
+                Library digitalLibrary = controller.filterDigitalBook(Genre.ROMANCE);
                 helpUserView.setItems(digitalLibrary.libraryProperty());
             } else if (poetry.isSelected() && digitalBook.isSelected()) {
-                LibraryModel digitalLibrary = controller.filterDigitalBook(Genre.POETRY);
+                Library digitalLibrary = controller.filterDigitalBook(Genre.POETRY);
                 helpUserView.setItems(digitalLibrary.libraryProperty());
             }
 
             Button checkOutButton = new Button("Checkout");
+            // Begins the checkout process.
             // VIEW: Prompts user to select a book and click "Checkout."
             // CONTROLLER: Handles the checkout request from the view.
             // MODEL: Updates the book's status and the user's borrowed and downloaded
@@ -422,7 +441,7 @@ public class LibraryView {
         findBook.show();
     }
 
-    // This method is designed as tool supporting user to find the wanted book/
+    // VIEW: Builds the dialog box with labels, buttons, and layout.
     public void searchBook() {
         Stage helpUser = new Stage();
         helpUser.initOwner(primaryStage);
@@ -458,9 +477,12 @@ public class LibraryView {
     // This method creates a JavaFX Scene that allows the user to search for books
     // by title. It provides an interactive interface with input fields and buttons
     // to guide the user through the search process.
-    // VIEW: Displays input fields, buttons and labels to allow the user to search by title.
-    // CONTROLLER: Handles the search request with the model and triggers the appropriate view updates.
-    // MODEL: Stores and manages the book data. It returns a book related to the search query.
+    // VIEW: Displays input fields, buttons and labels to allow the user to search
+    // by title.
+    // CONTROLLER: Handles the search request with the model and triggers the
+    // appropriate view updates.
+    // MODEL: Stores and manages the book data. It returns a book related to the
+    // search query.
     public Scene createSceneOpt2() {
         Label heading = new Label("Searching for books");
         heading.setFont(new Font("Arial", 20));
@@ -470,7 +492,7 @@ public class LibraryView {
         Button searchBtn = new Button("Search");
         Label message = new Label();
         Label helpUser = new Label();
-        
+
         searchBtn.setOnAction(e -> {
             String bookTitle = inputField.getText().toLowerCase().trim();
             Book foundedBook = controller.getBook(bookTitle);
@@ -479,6 +501,7 @@ public class LibraryView {
                 searchBook();
             } else {
                 checkOutForm(foundedBook);
+
             }
         });
         Button backBtn = new Button("Back to Menu");
@@ -496,9 +519,11 @@ public class LibraryView {
     }
 
     public void updateControllerFromListeners() {
+
     }
 
     public void observeModelAndUpdateControls() {
+
     }
 
     // This method creates a scene that displays lists of books the user has
@@ -507,7 +532,7 @@ public class LibraryView {
     // dashboard for managing their library interactions. To ensure the logic of the
     // system, we also have added
     // some commands to prevent users returning the digital books.
-    // VIEW: User's book display with return functionality 
+    // VIEW: User's book display with return functionality
     public Scene createSceneOpt3() {
         Label headingBorrowed = new Label("List of your borrowed books: ");
         headingBorrowed.setFont(new Font("Arial", 20));
@@ -546,7 +571,8 @@ public class LibraryView {
         });
 
         Button returnBtn = new Button("Return Book");
-        // This button initiates the book return process by sending the selected book to the controller.
+        // This button initiates the book return process by sending the selected book to
+        // the controller.
         // VIEW: Prompts user to return a book and sends a request to the controller.
         // CONTROLLER: Handles the request from view, updates the book status in the
         // model, and triggers an update in the view.

@@ -12,28 +12,28 @@ import java.util.Comparator;
 
 interface BookFilter {
     // Returns all digital books.
-    LibraryModel filterDigitalBook();
+    Library filterDigitalBook();
 
     // Returns all digital books by author.
-    LibraryModel filterDigitalBook(String author);
+    Library filterDigitalBook(String author);
 
     // Returns all digital books by genre.
-    LibraryModel filterDigitalBook(Genre genre);
+    Library filterDigitalBook(Genre genre);
 
     // Returns all print books.
-    LibraryModel filterPrintBook();
+    Library filterPrintBook();
 
     // Returns all print books by author.
-    LibraryModel filterPrintBook(String author);
+    Library filterPrintBook(String author);
 
     // Returns all print books by genre.
-    LibraryModel filterPrintBook(Genre genre);
+    Library filterPrintBook(Genre genre);
 
     // Returns all books by author.
-    LibraryModel filterBooks(String author);
+    Library filterBooks(String author);
 
     // Returns all books in genre.
-    LibraryModel filterBooks(Genre genre);
+    Library filterBooks(Genre genre);
 }
 
 interface BookSort {
@@ -42,17 +42,17 @@ interface BookSort {
     void sortByTitle();
 }
 
-class UserModel {
+public class AppModel {
     private ObservableList<Book> borrowedBooks;
     private ObservableList<Book> downloadedBooks;
-    private LibraryModel library;
+    private Library library;
     private ObservableList<Book> userBooks;
     private SimpleIntegerProperty countBorrowedBook;
     // Automatically updates UI counters
     private SimpleBooleanProperty overMaximum;
     // Controls borrowing limit enforcement
 
-    public UserModel(LibraryModel library) {
+    public AppModel(Library library) {
         // MODEL: Initialize data structures with observable collections
         this.borrowedBooks = FXCollections.observableArrayList();
         this.downloadedBooks = FXCollections.observableArrayList();
@@ -130,14 +130,14 @@ class UserModel {
         }
     }
 
-    // MODEL: Data access methods for Controlelr/View
+    // MODEL: Data access methods for Controller/View
     public ObservableList<Book> getDownloadedBooks() {
         // MODEL: Returns obeservable list for View Binding
         return this.downloadedBooks;
     }
 
     public ObservableList<Book> getUserBooks() {
-        // MODEL: Combined borrowed books and downloaded books for comprehensive view
+        // MODEL: Combines borrowed books and downloaded books into a list.
         List<Book> merged = new ArrayList<>();
         merged.addAll(borrowedBooks);
         merged.addAll(downloadedBooks);
@@ -145,7 +145,7 @@ class UserModel {
         return userBooks;
     }
 
-    // MODEL: Specific book retrieval with validation
+    // MODEL: Retrieves a specific book.    
     public DigitalBook getDownloadedBook(int index) {
         if (index < this.downloadedBooks.size()) {
             return (DigitalBook) this.downloadedBooks.get(index);
@@ -155,12 +155,12 @@ class UserModel {
         }
     }
 
-    // MODEL: Data access methods for Controlelr/View
+    // MODEL: Data access methods for Controller/View
     public ObservableList<Book> getBorrowedBooks() {
-        // MODEL: Returns obeservable list for View Binding
+        // MODEL: Returns an ObservableList for View Binding
         return this.borrowedBooks;
     }
-    // MODEL: Specific book retrieval with validation
+    // MODEL: Retrevies a specific book.
     public PrintBook getBorrowedBook(int index) {
         if (index < this.borrowedBooks.size()) {
             return (PrintBook) this.borrowedBooks.get(index);
@@ -194,22 +194,22 @@ class UserModel {
         System.out.println(result);
     }
 
-    // MODEL: Provides access to main library data
-    public LibraryModel getLibrary() {
+    // MODEL: Provides access to the main library data
+    public Library getLibrary() {
         return this.library;
     }
 }
 
 // MODEL: Main library data management and filtering logic
-public class LibraryModel implements BookFilter, BookSort {
+class Library implements BookFilter, BookSort {
     // MODEL: Core book collection storage
     private ObservableList<Book> books;
 
-    public LibraryModel() {
+    public Library() {
         this.books = FXCollections.observableArrayList();
     }
 
-    public LibraryModel(ObservableList<Book> books) {
+    public Library(ObservableList<Book> books) {
         this.books = books;
     }
 
@@ -227,7 +227,7 @@ public class LibraryModel implements BookFilter, BookSort {
     // SEARCH FUNCTIONALITY
     public Book getBook(String title) {
         // MODEL: Retrieves search query from Controller
-        // MODEL: iterates through book collection
+        // MODEL: Iterates through the book collection
         for (Book book : books) {
             // MODEL: compares title (case-sensitive)
             if (book.getTitle().toLowerCase().equals(title)) {
@@ -240,7 +240,7 @@ public class LibraryModel implements BookFilter, BookSort {
     }
 
     public boolean hasBook(Book book) {
-        // Validates book existence
+        // Validates if the book exists in the library.
         return this.books.contains(book);
     }
 
@@ -268,8 +268,8 @@ public class LibraryModel implements BookFilter, BookSort {
 
     // All methods below are for sorting / filtering.
     @Override
-    public LibraryModel filterDigitalBook() {
-        LibraryModel digitalBooks = new LibraryModel();
+    public Library filterDigitalBook() {
+        Library digitalBooks = new Library();
 
         for (Book book : books) {
             if (book instanceof DigitalBook) {
@@ -283,8 +283,8 @@ public class LibraryModel implements BookFilter, BookSort {
     }
 
     @Override
-    public LibraryModel filterDigitalBook(String author) {
-        LibraryModel digitalBooks = new LibraryModel();
+    public Library filterDigitalBook(String author) {
+        Library digitalBooks = new Library();
 
         for (Book book : this.books) {
             if (book instanceof DigitalBook && book.getAuthor().equals(author)) {
@@ -297,8 +297,8 @@ public class LibraryModel implements BookFilter, BookSort {
     }
 
     @Override
-    public LibraryModel filterDigitalBook(Genre genre) {
-        LibraryModel digitalBooks = new LibraryModel();
+    public Library filterDigitalBook(Genre genre) {
+        Library digitalBooks = new Library();
 
         for (Book book : this.books) {
             if (book instanceof DigitalBook && book.getGenre() == genre) {
@@ -311,8 +311,8 @@ public class LibraryModel implements BookFilter, BookSort {
     }
 
     @Override
-    public LibraryModel filterPrintBook() {
-        LibraryModel printBooks = new LibraryModel();
+    public Library filterPrintBook() {
+        Library printBooks = new Library();
 
         for (Book book : this.books) {
             if (book instanceof PrintBook) {
@@ -325,8 +325,8 @@ public class LibraryModel implements BookFilter, BookSort {
     }
 
     @Override
-    public LibraryModel filterPrintBook(String author) {
-        LibraryModel printBooks = new LibraryModel();
+    public Library filterPrintBook(String author) {
+        Library printBooks = new Library();
 
         for (Book book : this.books) {
             if (book instanceof PrintBook && book.getAuthor().equals(author)) {
@@ -339,8 +339,8 @@ public class LibraryModel implements BookFilter, BookSort {
     }
 
     @Override
-    public LibraryModel filterPrintBook(Genre genre) {
-        LibraryModel printBooks = new LibraryModel();
+    public Library filterPrintBook(Genre genre) {
+        Library printBooks = new Library();
 
         for (Book book : this.books) {
             if (book instanceof PrintBook && book.getGenre() == genre) {
@@ -352,8 +352,8 @@ public class LibraryModel implements BookFilter, BookSort {
     }
 
     @Override
-    public LibraryModel filterBooks(String author) {
-        LibraryModel books = new LibraryModel();
+    public Library filterBooks(String author) {
+        Library books = new Library();
 
         for (Book book : this.books) {
             if (book.getAuthor().equals(author)) {
@@ -366,8 +366,8 @@ public class LibraryModel implements BookFilter, BookSort {
     }
 
     @Override
-    public LibraryModel filterBooks(Genre genre) {
-        LibraryModel books = new LibraryModel();
+    public Library filterBooks(Genre genre) {
+        Library books = new Library();
 
         for (Book book : this.books) {
             if (book.getGenre() == genre) {

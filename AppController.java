@@ -1,35 +1,35 @@
 import javafx.collections.ObservableList;
 
-public class LibraryController {
-    // CONTROLLER: Hols reference to Model
-    private final UserModel model;
+public class AppController {
+    // CONTROLLER: Holds reference to Model
+    private final AppModel model;
 
-    public LibraryController(UserModel model) {
+    public AppController(AppModel model) {
         this.model = model;
     }
 
     // CONTROLLER: Delegates filtering requests to Model
-    public LibraryModel getLibrary() {
+    public Library getLibrary() {
         // CONTROLLER -> MODEL
         return this.model.getLibrary();
     }
 
-    public LibraryModel filterPrintBook() {
+    public Library filterPrintBook() {
         // CONTROLLER -> MODEL
         return this.getLibrary().filterPrintBook();
     }
 
-    public LibraryModel filterPrintBook(Genre genre) {
+    public Library filterPrintBook(Genre genre) {
         // CONTROLLER -> MODEL
         return this.getLibrary().filterPrintBook(genre);
     }
 
-    public LibraryModel filterDigitalBook() {
+    public Library filterDigitalBook() {
         // CONTROLLER -> MODEL
         return this.getLibrary().filterDigitalBook();
     }
 
-    public LibraryModel filterDigitalBook(Genre genre) {
+    public Library filterDigitalBook(Genre genre) {
         // CONTROLLER -> MODEL
         return this.getLibrary().filterDigitalBook(genre);
     }
