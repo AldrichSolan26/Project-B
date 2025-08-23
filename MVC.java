@@ -16,7 +16,7 @@ public class MVC extends Application {
 
         UserModel model = new UserModel(library);
         LibraryController controller = new LibraryController(model);
-        LibraryView view = new LibraryView(stage, model, controller);
+        LibraryView view = new LibraryView(controller, model, stage);
 
         stage.setScene(view.getScene());
         stage.show();

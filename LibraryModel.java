@@ -1,13 +1,11 @@
 
 import java.util.List;
-
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -50,13 +48,18 @@ class UserModel {
     private LibraryModel library;
     private ObservableList<Book> userBooks;
     private SimpleIntegerProperty countBorrowedBook;
+    // Automatically updates UI counters
     private SimpleBooleanProperty overMaximum;
+    // Controls borrowing limit enforcement
 
     public UserModel(LibraryModel library) {
+        // MODEL: Initialize data structures with observable collections
         this.borrowedBooks = FXCollections.observableArrayList();
         this.downloadedBooks = FXCollections.observableArrayList();
         this.library = library;
         this.userBooks = FXCollections.observableArrayList();
+
+        // MODEL: Create observable properties for real-time UI updates
         this.countBorrowedBook = new SimpleIntegerProperty(0);
         this.overMaximum = new SimpleBooleanProperty();
     }
@@ -89,24 +92,37 @@ class UserModel {
         return "" + borrowedBooks + "\n" + downloadedBooks;
     }
 
+    // CORE LIBRARY LOGIC - Book Return Process:
     public void returnBook(Book book) {
+        // MODEL: Checks if book exists in user's borrowed collection
         if (borrowedBooks.contains(book)) {
+            // MODEL: Removes book from user's borrowed list
             borrowedBooks.remove(book);
+            // MODEL: Updates book's availability status
             ((PrintBook) book).setAvailable(true);
+            // MODEL: Updates book's status for display
             book.setStatus(Status.AVAILABLE);
+            // Observable collection automatically notifies bound UI components
         } else {
             System.out.println(book.getFormattedTitle() + " is not borrowed by this user.");
         }
     }
 
+    // MODEL: Core business logic for book checkout
     public void checkoutBook(Book book) {
-
+        // MODEL: Validates book exists in Library
         if (book != null && library.hasBook(book)) {
+            // MODEL: determine book type and processes accordingly
             if (book instanceof DigitalBook && ((DigitalBook) book).canDownload()) {
+                // MODEL: Adds digital book to downloaded collection
                 this.downloadedBooks.add(book);
+                // Observable collection triggers automatic view updates
             } else if (book instanceof PrintBook && ((PrintBook) book).getAvailable()) {
+                // MODEL: adds printbook to borrowed collection
                 this.borrowedBooks.add(book);
+                // MODEL: updates book status
                 ((PrintBook) book).setAvailable(false);
+                // Observable collection triggers automatic View Updates
                 book.setStatus(Status.UNAVAILABLE);
             }
         } else {
@@ -114,11 +130,14 @@ class UserModel {
         }
     }
 
+    // MODEL: Data access methods for Controlelr/View
     public ObservableList<Book> getDownloadedBooks() {
+        // MODEL: Returns obeservable list for View Binding
         return this.downloadedBooks;
     }
 
     public ObservableList<Book> getUserBooks() {
+        // MODEL: Combined borrowed books and downloaded books for comprehensive view
         List<Book> merged = new ArrayList<>();
         merged.addAll(borrowedBooks);
         merged.addAll(downloadedBooks);
@@ -126,6 +145,7 @@ class UserModel {
         return userBooks;
     }
 
+    // MODEL: Specific book retrieval with validation
     public DigitalBook getDownloadedBook(int index) {
         if (index < this.downloadedBooks.size()) {
             return (DigitalBook) this.downloadedBooks.get(index);
@@ -135,10 +155,12 @@ class UserModel {
         }
     }
 
+    // MODEL: Data access methods for Controlelr/View
     public ObservableList<Book> getBorrowedBooks() {
+        // MODEL: Returns obeservable list for View Binding
         return this.borrowedBooks;
     }
-
+    // MODEL: Specific book retrieval with validation
     public PrintBook getBorrowedBook(int index) {
         if (index < this.borrowedBooks.size()) {
             return (PrintBook) this.borrowedBooks.get(index);
@@ -172,12 +194,15 @@ class UserModel {
         System.out.println(result);
     }
 
+    // MODEL: Provides access to main library data
     public LibraryModel getLibrary() {
         return this.library;
     }
 }
 
+// MODEL: Main library data management and filtering logic
 public class LibraryModel implements BookFilter, BookSort {
+    // MODEL: Core book collection storage
     private ObservableList<Book> books;
 
     public LibraryModel() {
@@ -188,33 +213,44 @@ public class LibraryModel implements BookFilter, BookSort {
         this.books = books;
     }
 
+    // MODEL: Book retrieval by index with validation
     public Book getBook(int index) {
         if (index < books.size()) {
-            return this.books.get(index);
+            // MODEL: Returns book if valid index
+            return this.books.get(index); 
         } else {
             System.out.println("Not in index!");
             return null;
         }
     }
 
+    // SEARCH FUNCTIONALITY
     public Book getBook(String title) {
+        // MODEL: Retrieves search query from Controller
+        // MODEL: iterates through book collection
         for (Book book : books) {
+            // MODEL: compares title (case-sensitive)
             if (book.getTitle().toLowerCase().equals(title)) {
+                // MODEL: returns matching book to controller
                 return book;
             }
         }
+        // MODEL: returns null if no match found
         return null;
     }
 
     public boolean hasBook(Book book) {
+        // Validates book existence
         return this.books.contains(book);
     }
 
     public void addBook(Book book) {
+        //  MODEL: Adds book to collection, trigger UI updates
         this.books.add(book);
     }
 
     public ObservableList<Book> libraryProperty() {
+        // MODEL: Returns observable collection for view Binding
         return this.books;
     }
 
@@ -373,7 +409,7 @@ enum Status {
     UNAVAILABLE {
         @Override
         public String toString() {
-            return "Unavaialble";
+            return "Unavailable";
         }
     },
     DOWNLOADABLE {
@@ -523,7 +559,7 @@ class PrintBook extends Book {
     private boolean available;
 
     PrintBook(SimpleStringProperty title, SimpleStringProperty author, SimpleObjectProperty<Genre> genre,
-            SimpleIntegerProperty pageCount, CoverType coverType, SimpleObjectProperty status) {
+            SimpleIntegerProperty pageCount, CoverType coverType, SimpleObjectProperty<Status> status) {
         super(title, author, genre, pageCount, status);
         this.coverType = coverType;
         this.available = this.getStatus() == Status.AVAILABLE;
