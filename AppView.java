@@ -62,7 +62,6 @@ public class AppView {
         Button option1 = new Button("    View all books    ");
         Button option2 = new Button("  Search for a book  ");
         Button option3 = new Button("   View your books  ");
-
         Label titleLabel = new Label("Select an option:");
         titleLabel.setFont(new Font("Arial", 20));
 
@@ -253,9 +252,15 @@ public class AppView {
 
             } else if (selectedBook instanceof PrintBook) {
                 if (model.overMaximumProperty().get()) {
-                    this.createPopUpForm(primaryStage,
+                    checkoutBtnForForm.setText("Borrow");
+                    checkoutBtnForForm.setOnAction(e->{
+                        this.createPopUpForm(primaryStage,
                             "You have reached the limit of books you can borrow!"
                                     + "\nPlease return a book to borrow new books");
+                        checkOut.close();
+                    });
+                    
+                    checkOut.show();
                 } else {
                     checkoutBtnForForm.setText("Borrow");
                     // MVC FLOW: Borrow process
@@ -285,7 +290,7 @@ public class AppView {
             } else {
                 checkoutBtnForForm.setText("Download");
                 checkoutBtnForForm.setOnAction(e -> {
-                    this.createPopUpForm(primaryStage, "This book can not be downloaded");
+                    this.createPopUpForm(primaryStage, "This book can't be downloaded");
                     checkOut.close();
                 });
                 checkOut.show();
